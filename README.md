@@ -75,7 +75,7 @@ and every relevant consumer before changing code.
 ## Background
 
 I wrote about the engineering problem behind this skill in
-[When Old Freemium Architecture Meets Today’s WordPress.org Review](https://abulkhoyer.com/notes/when-old-freemium-architecture-meets-todays-wordpress-org-review/).
+[Preparing an Established Freemium Plugin for Modern WordPress.org Review](https://abulkhoyer.com/notes/preparing-established-freemium-plugin-wordpress-org-review/).
 
 ## License
 
