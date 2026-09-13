@@ -6,10 +6,12 @@ Use this structure. Omit empty sections; do not invent evidence.
 
 - **Decision:** `NOT READY` / `CODE READY; RELEASE GATES PENDING` /
   `READY FOR SUBMISSION DECISION`
-- **Submission mode:** new / update / closed-plugin re-review
+- **Audit mode:** proactive / new / update / closed-plugin re-review /
+  package-only
 - **Candidate:** repository, branch, commit
 - **Exact package:** path, SHA-256, size
-- **Compared baseline:** released/default revision and version
+- **Compared baseline:** released/default revision and version, or `none` for an
+  initial submission
 - **Confidence:** high / medium / low, with one-sentence reason
 - **Acceptance caveat:** WordPress.org approval remains an independent Plugins
   Team decision.
@@ -19,7 +21,7 @@ Use this structure. Omit empty sections; do not invent evidence.
 - Plugin slug/main file/prefix/text domain
 - Maintained companions/themes/clients checked
 - Supported WordPress/PHP/site modes
-- Reviewer/QA artifact identity
+- Reviewer/QA artifact identity, or `none`
 - Authorized changes and explicitly excluded actions
 
 ## Reviewer and audit ledger
@@ -73,7 +75,7 @@ when those layers were mocked.
 Separate code blockers from manager-owned versioning, build, SVN, release
 confirmation, source-link, and reviewer-reply tasks.
 
-## Proposed reviewer reply
+## Proposed reviewer reply (reviewer-driven work only)
 
 Keep it concise:
 

@@ -1,13 +1,19 @@
 # WordPress.org Compliance
 
 An evidence-led Codex skill for auditing and remediating WordPress plugins
-before a WordPress.org submission, re-review, or release.
+before a first WordPress.org submission, routine update, re-review, or release.
+
+It selects the workflow that fits the plugin instead of assuming every project
+has been rejected, uses a freemium model, ships companion plugins, has existing
+users, or needs a migration.
 
 The skill focuses on the decisions that automated checks cannot make safely:
 
+- running proactive audits before a first submission;
+- comparing routine updates with their released contracts;
 - distinguishing reviewer requirements from scanner candidates;
 - preserving released data and integration contracts;
-- tracing Free, Pro, theme, and companion-plugin consumers;
+- tracing Free, Pro, theme, and companion-plugin consumers when they exist;
 - reviewing nonce, capability, ownership, validation, and output boundaries;
 - testing previous/current provider-consumer combinations;
 - validating the exact distributable instead of only the source tree.
@@ -35,9 +41,10 @@ Use $wordpress-org-compliance to audit this plugin and produce an
 evidence-backed remediation and release-gate report.
 ```
 
-The skill can also be selected automatically for WordPress.org reviewer emails,
-Plugin Check or PHPCS findings, public-prefix work, freemium ownership splits,
-request-security remediation, package audits, and resubmission decisions.
+The skill can also be selected automatically for proactive submission audits,
+routine updates, WordPress.org reviewer emails, Plugin Check or PHPCS findings,
+public-prefix work, applicable ownership splits, request-security remediation,
+package audits, and resubmission decisions.
 
 ## Read-only inventory helper
 

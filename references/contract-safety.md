@@ -80,7 +80,11 @@ an admin capability to public functionality. Still validate every parameter and
 keep form, sort link, pagination, related link, and AJAX redirect producers in
 sync with the parser's nonce contract when one is used.
 
-## Free/add-on ownership splits
+## Free/add-on ownership splits (when applicable)
+
+Skip this section for standalone plugins without a commercial edition or add-on
+ownership boundary. Do not infer that a plugin needs a split merely because this
+reference documents how to review one safely.
 
 The directory plugin must be complete without the commercial add-on. A safe
 split requires all of the following:

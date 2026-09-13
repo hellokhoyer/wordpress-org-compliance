@@ -1,4 +1,4 @@
 interface:
   display_name: "WordPress.org Compliance"
   short_description: "Audit WordPress plugins without unsafe fixes"
-  default_prompt: "Use $wordpress-org-compliance to audit this plugin and produce an evidence-backed remediation and release-gate report."
+  default_prompt: "Use $wordpress-org-compliance in the applicable proactive, reviewer-driven, remediation, or release-gate mode and produce an evidence-backed report for this plugin."

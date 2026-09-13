@@ -1,6 +1,6 @@
 ---
 name: wordpress-org-compliance
-description: Audit or remediate WordPress plugins for WordPress.org submission, re-review, or release when reviewer emails, Plugin Check or PHPCS findings, freemium separation, public-prefix changes, request security, packaging, or resubmission readiness are in scope. Do not use for ordinary plugin development unless directory-compliance risk is part of the task.
+description: Audit or remediate WordPress plugins for proactive WordPress.org submission checks, routine updates, reviewer re-reviews, or release packaging when directory policy, Plugin Check or PHPCS findings, public contracts, request security, source disclosure, or package readiness are in scope. Do not use for ordinary plugin development unless directory-compliance risk is part of the task.
 metadata:
   short-description: Evidence-led WordPress.org release audits
 ---
@@ -12,11 +12,17 @@ released sites merely to silence a scanner. It complements the official Plugin
 Directory guidelines and general WordPress development guidance; it does not
 replace them or promise acceptance by the Plugins Team.
 
+Select only the workflow paths supported by the plugin's actual context. A
+reviewer message, prior release, existing users, premium edition, companion
+plugin, migration, or previous rejection may not exist. Never import findings or
+remediation requirements from another plugin merely because they occurred in a
+past audit.
+
 ## Non-negotiable operating rules
 
 1. Audit the exact revision and exact distributable. Record the commit, package
-   SHA-256, plugin version, review mode (`new` or `update`), and supplied reviewer
-   message. A working-tree scan is not release evidence.
+   SHA-256, plugin version, applicable audit mode, and any supplied reviewer or
+   QA artifact. A working-tree scan is not release evidence.
 2. Treat reviewer examples as pattern leads, not an exhaustive file list. Search
    the entire release tree and every maintained provider or consumer of the same
    contract.
@@ -40,25 +46,39 @@ replace them or promise acceptance by the Plugins Team.
 Resolve these before implementation; infer only low-risk details from source:
 
 - plugin root, slug, main file, intended unique prefix, and text domain;
-- submission type (`new`, `update`, closed-plugin re-review) and target versions;
-- exact reviewer email/report and the revision or ZIP it examined;
+- audit context (`proactive`, `new`, `update`, `closed-plugin re-review`, or
+  `package-only`) and target versions;
+- exact reviewer email/report, if one exists, and the revision or ZIP it
+  examined;
 - current candidate revision and exact ZIP/build procedure;
-- maintained add-ons, themes, external API consumers, and supported update order;
+- released baseline, if one exists; otherwise record that this is an initial
+  baseline with no upgrade contract to test;
+- maintained add-ons, themes, external API consumers, and supported update
+  order, if any;
 - supported WordPress/PHP range and single-site/multisite expectations;
 - authority for data migrations, feature removal, external writes, live tests,
   commits, pushes, version bumps, SVN uploads, and reviewer replies.
 
-If the report has no revision or package checksum, say that its claims cannot be
-bound to the current code until reproduced.
+If a supplied report has no revision or package checksum, say that its claims
+cannot be bound to the current code until reproduced. If no report exists, do
+not manufacture reviewer claims; derive the audit scope from current official
+requirements, the plugin's behavior, and actual tool output.
 
 ## Select the operating mode
 
-- **Reviewer triage:** Read [evidence-and-triage.md](references/evidence-and-triage.md).
-  Use it for emails, QA reports, Plugin Check/PHPCS output, and alleged blockers.
+- **Proactive or first-submission audit:** Start with
+  [release-gates.md](references/release-gates.md), current official guidance, and
+  the exact package. Do not create upgrade or compatibility work when no prior
+  public contract exists.
+- **Routine update audit:** Compare the released baseline with the candidate,
+  then apply the release gates to the exact package.
+- **Reviewer or QA triage:** Read
+  [evidence-and-triage.md](references/evidence-and-triage.md). Use it only when
+  emails, QA reports, Plugin Check/PHPCS output, or alleged blockers exist.
 - **Remediation or ownership split:** Also read
   [contract-safety.md](references/contract-safety.md) before changing public names,
   requests, storage, migrations, Free/Pro ownership, or companion contracts.
-- **Release/readiness decision:** Read
+- **Package-only or final readiness decision:** Read
   [release-gates.md](references/release-gates.md) and validate the exact package.
 - **Audit deliverable:** Use
   [audit-report-template.md](references/audit-report-template.md) so severity,
@@ -70,12 +90,14 @@ bound to the current code until reproduced.
 
 ### 1. Freeze the evidence
 
-- Preserve the reviewer message verbatim and distinguish human instructions from
-  AI-marked analysis.
-- Record the reviewed artifact identity. If unavailable, mark it `unknown`; do
-  not pretend the current checkout is identical.
-- Establish a baseline: default/released branch, candidate branch, and their
-  behavioral and data-contract diff.
+- Preserve any reviewer message verbatim and distinguish human instructions
+  from AI-marked analysis. Record `none` when there is no reviewer artifact.
+- Record the reviewed artifact identity. If a supplied artifact cannot be
+  identified, mark it `unknown`; do not pretend the current checkout is
+  identical.
+- Establish the applicable baseline: the default/released revision for an
+  update, or `none` for a genuinely new plugin. Compare behavioral and data
+  contracts only where a prior contract exists.
 - Run the read-only inventory helper when useful:
 
 ```bash
@@ -92,10 +114,12 @@ manual inspection of the extracted release package.
 
 ### 2. Build a finding ledger
 
-For every reviewer category, record source, exact location, reachable entry
+For every applicable category, record source, exact location, reachable entry
 point, affected principal/data, reproducibility, policy basis, confidence, user
-impact, and companion consumers. Use the classifications in the triage
-reference. Keep severity separate from confidence.
+impact, and any companion consumers. For proactive audits, categories come from
+current official requirements and observed code/package evidence. For supplied
+reports, use the classifications in the triage reference. Keep severity
+separate from confidence.
 
 Turn every confirmed example into a pattern-wide source scan. Do not stop at the
 named file, but do not “fix similar-looking code” without proving the same
@@ -103,10 +127,11 @@ boundary and failure.
 
 ### 3. Trace end-to-end contracts
 
-For each proposed change, inventory producers and consumers across PHP, source
-JavaScript, generated bundles, templates, persisted content, AJAX/REST routes,
-cron, WP-CLI, imports, and maintained companion products. Test previous/current
-provider-consumer combinations where users can update components separately.
+For each proposed change, inventory existing producers and consumers across PHP,
+source JavaScript, generated bundles, templates, persisted content, AJAX/REST
+routes, cron, WP-CLI, imports, and maintained companion products. Test
+previous/current provider-consumer combinations only where prior releases or
+independently updated components create those states.
 
 Security review must treat these as separate controls:
 
