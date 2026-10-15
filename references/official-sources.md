@@ -1,6 +1,6 @@
 # Official Source Routing
 
-This file is a navigation baseline, last verified 2026-09-09. Recheck the live
+This file is a navigation baseline, not a dated certification. Recheck the live
 pages during each audit because guidelines, WordPress Core, Plugin Check, and the
 release process change.
 
@@ -66,12 +66,12 @@ articles only for context, never as the sole basis for a blocker.
 - Use each component's official release/support pages and registry metadata, not
   a search snippet, CDN filename or a pinned older source tag.
 - npm registry and stable distribution tags:
-  https://docs.npmjs.com/cli/v11/using-npm/registry/
+  https://docs.npmjs.com/cli/using-npm/registry/
   https://docs.npmjs.com/adding-dist-tags-to-packages/
 - Composer advisory auditing (separate from currency):
   https://getcomposer.org/doc/03-cli.md#audit
 - npm advisory auditing (separate from currency):
-  https://docs.npmjs.com/cli/v11/commands/npm-audit/
+  https://docs.npmjs.com/cli/commands/npm-audit/
 
 Record current UTC retrieval time and retain the official response/page. A
 reviewer's explicit stable-version instruction applies to that review; do not

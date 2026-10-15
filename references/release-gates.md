@@ -7,8 +7,9 @@ Unknown/unexecuted technical checks cannot be reported as release-manager tasks.
 
 ## Gate 1: Identity and scope
 
-- Record repository remote, branch, commit, dirty status, plugin slug, main file,
-  version, Stable Tag, text domain, intended prefix, and submission mode.
+- Record plugin slug, discovered main file, version, Stable Tag, text domain,
+  intended prefix and submission mode. Record repository/branch/commit/status
+  when available; otherwise use the artifact checksum and record absent VCS data.
 - Record the previous public release and maintained companions, or evidence that
   none exist. First submission is not an upgrade from an internal Git snapshot.
 - Bind every QA/reviewer claim to a revision or package hash. Mark unknowns.
@@ -42,10 +43,13 @@ Unknown/unexecuted technical checks cannot be reported as release-manager tasks.
 
 ## Gate 4: Policy, product, and dependencies
 
-- Every feature in the directory package functions without a license, trial,
-  artificial quota, or locked bundled implementation.
-- Commercial code is owned by an external add-on or genuine documented service;
-  Free remains end-to-end functional without it.
+- Review the actual business model against current trialware and serviceware
+  guidance. Bundled local functionality must not be artificially locked behind
+  payment, a licence check, trial expiry or a quota.
+- Where commercial companions exist, verify code ownership and the directory
+  package's declared standalone behavior. Genuine documented external services
+  may require credentials or payment under the serviceware rules; do not invent
+  a local free replacement for their service functionality.
 - Outbound services, data sent, circumstances, terms, and privacy links are
   documented; consent is obtained where required.
 - No external self-update or remotely loaded executable code remains.
@@ -62,20 +66,23 @@ Unknown/unexecuted technical checks cannot be reported as release-manager tasks.
 - WordPress-bundled libraries are consumed through Core handles/APIs rather than
   duplicated.
 - Minified/generated files have public, maintained corresponding source and build
-  instructions. Composer runtime implies a complete `composer.json` and an
-  explainable production dependency set.
+  instructions. When dependency managers are used, verify the actual manifests,
+  production dependency set and reproducible build/source route. Do not require
+  a particular manager or bundled config file solely because an example used it.
 
 ## Gate 5: Static and focused verification
 
 Prefer project-defined commands. Record tool versions, rulesets, exclusions, and
 raw outputs.
 
-Minimum evidence generally includes:
+The audit plan selects actual source paths, tools and Plugin Check mode. Set the
+following variables from discovered project facts and installed tool help before
+using these command templates; do not copy values from another plugin:
 
 ```bash
-php -l path/to/changed.php
-phpcs --standard=WordPress path/to/changed.php
-wp plugin check plugin-slug --mode=new --format=csv
+php -l "$AUDIT_PHP_FILE"
+phpcs --standard=WordPress "$AUDIT_SOURCE_PATH"
+wp plugin check "$AUDIT_PLUGIN_SLUG" --mode="$AUDIT_CHECK_MODE" --format=csv
 ```
 
 Select `new` for first submission and the applicable `update` mode for an update.
@@ -85,9 +92,11 @@ only errors. An ignore/suppression is acceptable only for a proven false
 positive, narrow to the exact line/rule, and documented with the visible control
 path.
 
-Run Plugin Review PHPCS against the extracted ZIP as well as the project's WPCS
-ruleset. Include a candidate scan with annotations disabled; retain both raw and
-source-dispositioned counts. An unresolved warning is not a clean scan, and a
+Run Plugin Review PHPCS against the extracted ZIP and the applicable WordPress
+ruleset, including project rules when provided. Do not require Composer, npm or
+a particular framework just to run an audit. Include a candidate scan with
+annotations disabled; retain both raw and source-dispositioned counts. An
+unresolved warning is not a clean scan, and a
 proven false positive is not automatically a code defect.
 
 Focused regressions for a confirmed fix must reproduce the baseline defect and
@@ -130,7 +139,8 @@ Use the same command or export rules as release management. Then:
    supported, nested ZIPs, editor files, OS metadata, debug logs, audit reports,
    test fixtures, screenshots/proof pages, local agent instructions, and unused
    dependency trees.
-4. Confirm the main file is `<slug>/<slug>.php` and readme is present.
+4. Discover the main PHP file from its plugin header, confirm the intended entry
+   point is present, and check the readme. Do not infer its filename from the slug.
 5. Extract to a clean temporary directory.
 6. Run Plugin Check/PHPCS and source scans against the extracted package, not the
    repository.
@@ -157,8 +167,8 @@ Classify why every non-runtime file ships.
 - Release confirmation and reviewer reply are manager/committer actions unless
   explicitly delegated.
 
-An Upgrade Notice is delivered only when WordPress receives a newer update
-response containing its metadata. Installing the same version cannot prove that
+When an Upgrade Notice is applicable, it is delivered only when WordPress
+receives a newer update response containing its metadata. Installing the same version cannot prove that
 notice. A controlled Core render can test the hook, but final production proof
 requires the actual older-to-newer update offer.
 

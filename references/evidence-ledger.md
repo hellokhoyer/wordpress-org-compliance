@@ -9,15 +9,25 @@ or a large passing test count does not establish compliance coverage.
 
 Initialize before collecting evidence; keep the ledger, reports and raw evidence
 outside the distributable. Helpers require Python 3.9+ and the standard library.
+Select `AUDIT_MODE` and `AUDIT_SCOPE` from the requested work and project context;
+replace the schematic paths below before running these command templates.
 
 ```bash
-python3 scripts/verify_readiness.py init --mode=new --scope=full \
+python3 scripts/verify_readiness.py init --mode="$AUDIT_MODE" --scope="$AUDIT_SCOPE" \
   --package=/path/plugin.zip --output=/path/audit/audit.json
 ```
 
 The initializer enumerates all required checks as `UNVERIFIED`. Resolve each
 applicability boolean from source/product facts. `has_prior_public_release=false`
 does not mean no initial setup is needed: fresh/repeat activation still applies.
+
+The current ledger schema is version 2. It records `currency_freshness` with an
+unresolved `max_age_hours` and `reason`. When dependencies exist, choose a positive
+finite age limit from the audit/release requirements and document the rationale
+before closing currency. There is no universal age threshold or implicit default.
+No-dependency audits do not need a currency window. For an older ledger,
+initialize the current schema and transfer only revalidated evidence; do not
+relabel historical runs or silently treat old defaults as project policy.
 
 The matrix covers identity/current policy/reviewer categories, request authority,
 input/output/SQL/storage/privacy/admin behavior, five separate dependency checks,
@@ -55,7 +65,7 @@ every row is invalid evidence even if a structural validator cannot detect it.
   "package_sha256": "<actual ZIP SHA-256>",
   "reason": "Describe the invariant, executed command/review and actual result.",
   "evidence": [
-    {"path": "activation-php74.json", "sha256": "<actual evidence SHA-256>"}
+    {"path": "activation-declared-minimum-php.json", "sha256": "<actual evidence SHA-256>"}
   ]
 }
 ```
@@ -69,9 +79,9 @@ package verification and cleanup cannot be waived with `N_A`.
 ## Dependency evidence is not interchangeable
 
 Inventory **all distributed third-party components**, including copied libraries,
-embedded/transitive code inside generated bundles, PHP vendor trees, fonts and CSS/assets without a
-lockfile. The first-party inventory helper's vendor exclusions do not apply to
-this inventory. Distinguish distributed runtime dependencies from development-only
+embedded/transitive code inside generated bundles, PHP vendor trees, fonts and
+CSS/assets without a lockfile. The first-party inventory helper's vendor
+exclusions do not apply to this inventory. Distinguish distributed runtime dependencies from development-only
 tools and WordPress-provided handles. Record duplicate bundled copies separately
 when their versions differ.
 
@@ -86,31 +96,51 @@ An old official tarball can be authentic and licensed while its version is stale
 No matching advisory does not prove that a library is current or maintained.
 
 For currency, obtain current stable metadata from the official upstream during
-this audit and within 24 hours of the final readiness validation. This is this
-skill's evidence-freshness rule, not a WordPress.org policy deadline. Record
-bundled version/file hashes, latest stable version, official
+this audit and within its explicitly declared freshness window at final
+validation. The window is an audit-method choice; cite a policy deadline only
+when an actual authoritative requirement sets one. Record bundled version/file
+hashes, latest stable version, official
 URL, UTC retrieval time and raw metadata/page snapshot. Never infer “latest” from
 an unchanged header, pinned source tag, old audit or successful rendering.
 
-The helper handles **declared vendored npm dependencies only**. Supply an inventory
-manifest bound to the exact ZIP, with an explicit completeness declaration:
+Build the manifest from the candidate ZIP's actual dependency inventory. No
+library, package manager or vendor-directory layout is required merely because
+this skill discusses one. Use the npm helper only when the plugin actually
+ships a component published on npm; other components need the equivalent
+upstream evidence described below.
+
+The following is a **schema template**, not a default dependency list. Replace
+all angle-bracket placeholders with observed values and add one row per actual
+component. Keep `inventory_complete` false until the entire distributed inventory
+has been reviewed; then explicitly set it to true.
 
 ```json
 {
   "package_sha256": "<actual ZIP SHA-256>",
-  "inventory_complete": true,
+  "inventory_complete": false,
   "dependencies": [
     {
-      "id": "chartjs",
-      "ecosystem": "npm",
-      "package": "chart.js",
-      "version": "4.4.1",
-      "version_marker": "Chart.js v4.4.1",
-      "paths": ["plugin-slug/assets/vendor/chart.umd.min.js"]
+      "id": "<unique-component-id>",
+      "ecosystem": "<actual ecosystem>",
+      "package": "<actual upstream package name>",
+      "version": "<observed bundled version>",
+      "version_marker": "<exact marker from the bundled file>",
+      "paths": ["<plugin-slug>/<actual bundled file path>"]
     }
   ]
 }
 ```
+
+For an npm component, set `ecosystem` to `npm` and `package` to its actual
+registry name. Other ecosystems remain unverified by this helper and require
+manual official evidence; they must still remain in the full audit inventory.
+
+If source/package review confirms no distributed third-party components, use
+`dependencies: []`, record that inventory evidence and resolve the four dependent
+checks as justified `N_A`. Do not add a dependency to satisfy this template.
+The inventory check itself still requires evidence. A version marker that is
+absent or ambiguous needs source/revision evidence and manual verification;
+do not invent one or modify the bundled file to make the helper pass.
 
 ```bash
 python3 scripts/check_dependencies.py --manifest=/path/audit/dependencies.json \

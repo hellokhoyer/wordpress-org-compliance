@@ -7,6 +7,11 @@ It selects the workflow that fits the plugin instead of assuming every project
 has been rejected, uses a freemium model, ships companion plugins, has existing
 users, or needs a migration.
 
+Project identity, versions, entry points, runtime minimums, dependencies, storage,
+build tools and release channels come from the audited project. Examples use
+placeholders; tests generate synthetic package data. Official WordPress sources
+and API names remain explicit because they define this skill's scope.
+
 The skill focuses on the decisions that automated checks cannot make safely:
 
 - running proactive audits before a first submission;
@@ -63,13 +68,16 @@ python3 scripts/audit_inventory.py /path/to/plugin \
 Its output contains candidates. A match is not automatically a policy violation
 or security defect. Inspect reachability, authorization, stored-data semantics,
 and every relevant consumer before changing code.
+Supply the actual declared prefix; an omitted prefix is labeled as a heuristic.
+Add `--no-git` for archive-only audits that should not probe Git.
 
 ## Evidence and readiness helpers
 
 For a full audit start with the unresolved matrix before collecting evidence:
+set `AUDIT_MODE` to the actual audit mode, rather than assuming a first release.
 
 ```bash
-python3 scripts/verify_readiness.py init --mode=new --scope=full \
+python3 scripts/verify_readiness.py init --mode="$AUDIT_MODE" --scope=full \
   --package=/path/plugin.zip --output=/path/audit/audit.json
 ```
 
@@ -86,6 +94,8 @@ python3 scripts/verify_readiness.py check /path/audit/audit.json \
 
 See [evidence-ledger.md](references/evidence-ledger.md) for the manifest, evidence
 fields, first-submission exceptions and decision rules. Python 3.9+ is required.
+Ledger schema 2 replaces the former fixed currency-age threshold with an explicit
+per-audit freshness policy; older ledgers need review using the current schema.
 The validator returns zero only for a complete `READY FOR SUBMISSION DECISION`
 record. It checks completeness, dates, hashes and decision consistency; it cannot
 prove an inventory/source judgment is correct or guarantee directory acceptance.
@@ -106,11 +116,6 @@ Run helper regressions with `python3 -m unittest discover -s tests -v`.
 - `scripts/check_dependencies.py` checks declared npm dependency currency.
 - `scripts/verify_readiness.py` initializes/validates overall audit readiness.
 - `tests/` verifies incomplete, stale, outdated and narrow-scope failure paths.
-
-## Background
-
-I wrote about the engineering problem behind this skill in
-[Preparing an Established Freemium Plugin for Modern WordPress.org Review](https://abulkhoyer.com/notes/preparing-established-freemium-plugin-wordpress-org-review/).
 
 ## License
 

@@ -18,11 +18,19 @@ plugin, migration, or previous rejection may not exist. Never import findings or
 remediation requirements from another plugin merely because they occurred in a
 past audit.
 
+Derive identity, author, versions, minimum runtimes, entry points, dependencies,
+storage, roles, build tools and release channels from this project's files and
+declared support policy. Never carry those values over from another audit or a
+test fixture. Use only the checks and tools applicable to the discovered
+features; an absent feature needs evidence, not an invented implementation.
+Keep official WordPress requirements separate from project conventions and
+audit-method choices. Examples and commands are templates, not project defaults.
+
 ## Non-negotiable operating rules
 
-1. Audit the exact revision and exact distributable. Record the commit, package
-   SHA-256, plugin version, applicable audit mode, and any supplied reviewer or
-   QA artifact. A working-tree scan is not release evidence.
+1. Audit the exact revision and exact distributable. Record the commit when
+   available, package SHA-256, plugin version, applicable audit mode, and any
+   supplied reviewer or QA artifact. A working-tree scan is not release evidence.
 2. Treat reviewer examples as pattern leads, not an exhaustive file list. Search
    the entire release tree and every maintained provider or consumer of the same
    contract.
@@ -64,6 +72,7 @@ Resolve these before implementation; infer only low-risk details from source:
 - maintained add-ons, themes, external API consumers, and supported update
   order, if any;
 - supported WordPress/PHP range and single-site/multisite expectations;
+- project-defined tooling/build commands and the audit's evidence-freshness policy;
 - authority for data migrations, feature removal, external writes, live tests,
   commits, pushes, version bumps, SVN uploads, and reviewer replies.
 
@@ -116,6 +125,10 @@ python3 scripts/audit_inventory.py /path/to/plugin \
   --slug plugin-slug --prefix plugin_prefix \
   --package /path/to/plugin-slug.zip
 ```
+
+Supply `--prefix` from actual public declarations/contracts, not a copied example.
+Without it, the helper labels its slug-based guess as an unverified heuristic.
+Use `--no-git` when the audit should inspect package files without probing VCS.
 
 The helper emits candidates, not verdicts. Inspect every relevant match in
 actual code before classifying it. Its pattern scan intentionally skips vendored
@@ -170,7 +183,7 @@ handler.
 - Preserve stable data contracts unless the user explicitly authorizes a
   migration.
 - Prefer capability checks matching the operation over `manage_options` applied
-  everywhere; retain deliberate manager/vendor/custom-role access with ownership
+  everywhere; preserve legitimate project-defined roles and ownership
   restrictions.
 - Rename collision-prone public runtime identifiers only after mapping every
   caller. Do not rename local variables, namespaced class methods, template
@@ -201,14 +214,18 @@ invent a universal policy violation or force an unsafe major-version upgrade.
 For confirmed fixes use focused regressions that reproduce the baseline defect
 and pass on the candidate. Proactive acceptance tests need no invented failing
 baseline. Exercise unauthorized and cross-owner cases as well as valid flows.
-For companion ecosystems, execute the compatibility matrix from the contract reference.
+For companion ecosystems, execute the compatibility matrix from the contract
+reference.
 
-Static checks are supporting evidence. Run the repository's real commands, PHP
-lint, WPCS/PHPCS with warnings visible, Plugin Check in the correct mode, and
+Static checks are supporting evidence. Discover the project's existing tools and
+commands; do not assume it uses a particular dependency manager or test framework.
+Run its applicable commands, PHP lint, WPCS/PHPCS with warnings visible,
+Plugin Check in the correct mode, and
 targeted source scans. Do not accept `phpcs -n`, ignored warnings, annotations,
 or mocked tests as proof of an untested live behavior. Scan the extracted ZIP
-with Plugin Review PHPCS as well as project WPCS; run a candidate scan with code
-annotations disabled and disposition its findings without hiding the raw totals.
+with Plugin Review PHPCS and the applicable WordPress/project ruleset; run a
+candidate scan with code annotations disabled and disposition its findings
+without hiding the raw totals.
 
 ### 6. Gate the exact release package
 

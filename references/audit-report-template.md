@@ -9,7 +9,7 @@ Use this structure. Omit empty sections; do not invent evidence.
   `LIMITED REVIEW; NO FULL READINESS DECISION`
 - **Audit mode:** proactive / new / update / closed-plugin re-review /
   package-only
-- **Candidate:** repository, branch, commit
+- **Candidate:** repository/branch/commit when available; otherwise artifact identity
 - **Exact package:** path, SHA-256, size
 - **Compared baseline:** released/default revision and version, or `none` for an
   initial submission
@@ -24,6 +24,7 @@ Use this structure. Omit empty sections; do not invent evidence.
 - Supported WordPress/PHP/site modes
 - Reviewer/QA artifact identity, or `none`
 - Authorized changes and explicitly excluded actions
+- Discovered project tooling and the audit's evidence-freshness policy/rationale
 
 ## Required-check coverage
 
@@ -94,16 +95,14 @@ actions. A missing build, source-link check or runtime test prevents code readin
 
 ## Proposed reviewer reply (reviewer-driven work only)
 
-Keep it concise:
+Compose the reply from the actual finding dispositions, completed actions,
+artifact/upload status and only necessary evidence-backed clarifications. Do
+not copy a stock claim that all categories were fixed, a review was exhaustive,
+or an upload happened. Write uploaded/sent statements only after success; label
+conditional drafts with the action that must occur first.
 
-> Thank you for the review. We addressed the reported categories and completed a
-> pattern-wide review of the updated release package. The corrected version has
-> been uploaded through the applicable review/release channel. [Add only a necessary clarification
-> with one concrete example.] Please let us know if you need anything further.
-
-Write an uploaded/sent statement only after the action actually succeeded. If
-preparing a draft, label it for use after upload. Before approval the channel is
-the existing submission's updated-ZIP control, not SVN. Reply to the actual review
-thread, not the submission-confirmation thread. Do not send without authority.
+Determine the correct upload/reply channel from the current review instructions,
+submission stage and official process. Do not assume an approved SVN repository,
+Git host, review UI or email thread exists. Do not send without authority.
 Do not list every internal change unless the reviewer asks; include only necessary
 clarifications. Do not claim guaranteed compliance or acceptance.

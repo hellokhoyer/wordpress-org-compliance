@@ -20,7 +20,9 @@ alone.
 
 ## Provider-consumer matrix
 
-For each shared change, test or explicitly reject these states:
+For each shared change, select states that actually exist in the support model.
+A standalone first release has no previous-provider or absent-companion state to
+invent. For applicable states, test or document why they are unsupported:
 
 | Provider | Consumer | Required result |
 | --- | --- | --- |
@@ -41,8 +43,8 @@ a backup/restore path.
 
 ## Prefix remediation
 
-- Prefix collision-prone public runtime identifiers with a distinctive string of
-  at least four characters, following current Plugin Team guidance.
+- Prefix collision-prone public runtime identifiers according to current Plugin
+  Team guidance and the project's established public contract.
 - Do not rename local variables or namespaced class methods solely for prefix
   compliance.
 - Do not rename stable stored keys/slugs as collateral cleanup.
@@ -75,16 +77,17 @@ Review the full round trip:
 10. Output is escaped for HTML, attribute, URL, JavaScript, CSS, or raw-byte
     context at the final boundary.
 
-Public search/price/availability reads may deliberately be anonymous. Do not add
+Public read endpoints may deliberately be anonymous. Do not add
 an admin capability to public functionality. Still validate every parameter and
 keep form, sort link, pagination, related link, and AJAX redirect producers in
 sync with the parser's nonce contract when one is used.
 
 ## Free/add-on ownership splits (when applicable)
 
-Skip this section for standalone plugins without a commercial edition or add-on
-ownership boundary. Do not infer that a plugin needs a split merely because this
-reference documents how to review one safely.
+Skip this section for plugins without a local commercial-code/add-on ownership
+boundary. A service integration does not imply a premium local edition. Review
+genuine service access under current serviceware rules; do not invent a split or
+local implementation merely because this reference describes one.
 
 The directory plugin must be complete without the commercial add-on. A safe
 split requires all of the following:
@@ -94,11 +97,11 @@ split requires all of the following:
 - Free does not ship locked local implementations, empty premium tabs, disabled
   controls, or license checks that unlock bundled behavior.
 - Removing a premium gate cannot leave legacy premium metadata selecting an
-  unsupported mode and rendering a blank/non-bookable Free screen. Resolve a
+  unsupported mode and rendering a blank or unusable base-plugin screen. Resolve a
   complete Free default first; let the add-on extend it through neutral hooks.
 - Existing premium metadata remains inert but preserved while the add-on is
   absent, unless explicit deletion authority exists.
-- Settings, imports/exports, templates, pricing, checkout, order data, emails,
+- Settings, imports/exports, templates, domain records, notifications,
   and API surfaces agree on ownership.
 - Deactivating the add-on returns to a safe Free path without deleting data.
 

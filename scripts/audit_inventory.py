@@ -89,9 +89,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--slug", help="Expected WordPress.org plugin slug.")
     parser.add_argument(
         "--prefix",
-        help="Expected public runtime prefix, for example myplugin.",
+        help="Public runtime prefix established from this project's declarations/contracts.",
     )
     parser.add_argument("--package", type=Path, help="Exact release ZIP to inspect.")
+    parser.add_argument("--no-git", action="store_true", help="Skip Git inspection for archive-only/restricted audits.")
     parser.add_argument(
         "--max-matches",
         type=int,
@@ -408,6 +409,15 @@ def package_inventory(package: Path, slug: str) -> Dict[str, object]:
             result["entry_count"] = len(entries)
             result["integrity"] = "pass" if archive.testzip() is None else "fail"
             names = [entry.filename for entry in entries]
+            main_candidates = []
+            for entry in entries:
+                parts = PurePosixPath(entry.filename).parts
+                if len(parts) != 2 or parts[0] != slug or PurePosixPath(entry.filename).suffix.lower() != ".php":
+                    continue
+                with archive.open(entry) as stream:
+                    header = stream.read(8192).decode("utf-8", errors="replace")
+                if re.search(r"^[ \t/*#@]*Plugin Name:\s*\S", header, re.MULTILINE | re.IGNORECASE):
+                    main_candidates.append(entry.filename)
     except (OSError, zipfile.BadZipFile) as error:
         result["integrity"] = f"fail: {error}"
         return result
@@ -434,8 +444,8 @@ def package_inventory(package: Path, slug: str) -> Dict[str, object]:
             nested_archives.append(name)
 
     result["top_level"] = roots
-    result["expected_main_file"] = f"{slug}/{slug}.php"
-    result["expected_main_present"] = f"{slug}/{slug}.php" in names
+    result["main_file_candidates"] = sorted(main_candidates)
+    result["main_file_present"] = bool(main_candidates)
     result["readme_present"] = f"{slug}/readme.txt" in names
     result["unsafe_entries"] = unsafe
     result["local_only_candidates"] = local_only
@@ -460,8 +470,8 @@ def print_package(data: Dict[str, object]) -> None:
         ("ZIP integrity", "integrity"),
         ("Entry count", "entry_count"),
         ("Top-level entries", "top_level"),
-        ("Expected main file", "expected_main_file"),
-        ("Expected main present", "expected_main_present"),
+        ("Header-bearing main file candidates", "main_file_candidates"),
+        ("Main file present", "main_file_present"),
         ("Readme present", "readme_present"),
     ):
         print_value(label, data.get(key))
@@ -521,9 +531,9 @@ def main() -> int:
 
     version = parse_header(main_source, "Version")
     stable_tag = parse_readme_header(readme_source, "Stable tag")
-    commit = run_git(root, "rev-parse", "HEAD")
-    branch = run_git(root, "branch", "--show-current")
-    status = run_git(root, "status", "--porcelain")
+    commit = run_git(root, "rev-parse", "HEAD") if not args.no_git else None
+    branch = run_git(root, "branch", "--show-current") if not args.no_git else None
+    status = run_git(root, "status", "--porcelain") if not args.no_git else None
 
     candidates, counters = scan_source(root, prefix)
 
@@ -540,7 +550,8 @@ def main() -> int:
     print("\n## Identity")
     print_value("Plugin root", root)
     print_value("Slug", slug)
-    print_value("Expected prefix", prefix)
+    print_value("Prefix used for candidate scan", prefix)
+    print_value("Prefix basis", "supplied --prefix; verify against project declarations" if args.prefix else "slug-derived heuristic; public contract is unverified")
     print_value("Main file", main_file.relative_to(root) if main_file else "not found")
     print_value("Plugin name", parse_header(main_source, "Plugin Name"))
     print_value("Version", version)
@@ -553,6 +564,7 @@ def main() -> int:
     print_value("Requires at least", parse_header(main_source, "Requires at least"))
     print_value("Requires PHP", parse_header(main_source, "Requires PHP"))
     print_value("Readme Tested up to", parse_readme_header(readme_source, "Tested up to"))
+    print_value("Git inspection", "skipped by request" if args.no_git else "attempted; unavailable values remain unknown")
     print_value("Git branch", branch)
     print_value("Git commit", commit)
     print_value("Dirty paths", len(status.splitlines()) if status is not None else None)

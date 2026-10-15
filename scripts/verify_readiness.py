@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import re
 import sys
 import zipfile
@@ -34,6 +35,7 @@ CONTEXT_FIELDS = ('has_reviewer_message', 'has_third_party_dependencies',
                   'has_prior_public_release', 'has_independently_updated_consumers',
                   'has_admin_ui_or_notices', 'has_ui_or_exports')
 SHA256 = re.compile(r'[0-9a-f]{64}')
+LEDGER_SCHEMA = 2
 
 
 def parse_time(value):
@@ -77,7 +79,23 @@ def na_allowed(key, context):
     return False
 
 
-def validate_currency(item, directory, expected, started, inventory_ids, package):
+def currency_window(policy):
+    if not isinstance(policy, dict):
+        raise ValueError('Declare a project/audit-specific currency_freshness policy')
+    hours = policy.get('max_age_hours')
+    if type(hours) not in (int, float) or hours <= 0:
+        raise ValueError('Currency freshness max_age_hours must be an explicit positive finite number')
+    if not isinstance(policy.get('reason'), str) or not policy['reason'].strip():
+        raise ValueError('Currency freshness needs its project/audit rationale')
+    try:
+        if not math.isfinite(hours):
+            raise ValueError('Currency freshness max_age_hours must be finite')
+        return timedelta(hours=hours)
+    except OverflowError as error:
+        raise ValueError('Currency freshness exceeds the supported timestamp range') from error
+
+
+def validate_currency(item, directory, expected, started, inventory_ids, package, freshness):
     report_path = item.get('report')
     references = {entry['path']: entry for entry in item.get('evidence', [])}
     if report_path not in references:
@@ -90,8 +108,9 @@ def validate_currency(item, directory, expected, started, inventory_ids, package
         raise ValueError('Currency report has a different artifact or incomplete inventory')
     checked = parse_time(report.get('checked_at'))
     now = datetime.now(timezone.utc)
-    if checked < started or checked > now + timedelta(minutes=5) or checked < now - timedelta(hours=24):
-        raise ValueError('Currency lookup must be from this audit and within the last 24 hours; future/stale evidence cannot pass')
+    age_limit = currency_window(freshness)
+    if checked < started or checked > now + timedelta(minutes=5) or now - checked > age_limit:
+        raise ValueError('Currency lookup must be from this audit and within its declared freshness window; future/stale evidence cannot pass')
     rows = report.get('records')
     if not isinstance(rows, list) or not rows:
         raise ValueError('Currency report must account for every declared dependency')
@@ -134,8 +153,9 @@ def validate_currency(item, directory, expected, started, inventory_ids, package
 
 
 def initialize(package, scope, mode):
-    return {'schema_version': 1, 'scope': scope, 'mode': mode, 'started_at': utc_now(),
+    return {'schema_version': LEDGER_SCHEMA, 'scope': scope, 'mode': mode, 'started_at': utc_now(),
             'package_sha256': digest(package),
+            'currency_freshness': {'max_age_hours': None, 'reason': ''},
             'context': {'has_reviewer_message': None, 'has_third_party_dependencies': None,
                         'has_prior_public_release': None, 'has_independently_updated_consumers': None,
                         'has_admin_ui_or_notices': None, 'has_ui_or_exports': None},
@@ -152,8 +172,8 @@ def validate(ledger, package, directory):
         members = archive.infolist()
         if archive.testzip() is not None or len({m.filename for m in members}) != len(members):
             errors.append('ZIP has corrupt or ambiguous members')
-    if ledger.get('schema_version') != 1 or isinstance(ledger.get('schema_version'), bool):
-        errors.append('Unsupported ledger schema')
+    if ledger.get('schema_version') != LEDGER_SCHEMA or type(ledger.get('schema_version')) is not int:
+        errors.append('Unsupported ledger schema; initialize the current matrix and preserve/review prior evidence')
     if ledger.get('mode') not in MODES or ledger.get('scope') not in {'full', 'limited'}:
         errors.append('Missing or invalid audit mode/scope')
     if ledger.get('package_sha256') != expected:
@@ -206,7 +226,7 @@ def validate(ledger, package, directory):
             if status == 'FAIL':
                 failures.append(key)
             if status == 'PASS' and key == 'dependency_currency':
-                exceptions.extend(validate_currency(item, directory, expected, started, dependencies, package))
+                exceptions.extend(validate_currency(item, directory, expected, started, dependencies, package, ledger.get('currency_freshness')))
         except (ValueError, OSError, KeyError, TypeError, RuntimeError, zipfile.BadZipFile) as error:
             errors.append(key + ': ' + str(error))
     technical_failures = [key for key in failures if key != 'owner_actions']
@@ -222,6 +242,7 @@ def validate(ledger, package, directory):
     else:
         decision = 'READY FOR SUBMISSION DECISION'
     return {'decision': decision, 'package_sha256': expected, 'validation_errors': errors,
+            'currency_freshness': ledger.get('currency_freshness'),
             'failed_checks': failures, 'unverified_checks': pending,
             'supported_dependency_exceptions': exceptions,
             'limitation': 'Evidence completeness and consistency only; source judgments, inventory completeness and WordPress.org approval are not certified.'}
