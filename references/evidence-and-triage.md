@@ -60,6 +60,14 @@ line numbers or conclusions to a different checkout.
 
 ## Common reasoning traps
 
+### Evidence coverage is separate from test success
+
+A passing behavioral suite does not establish dependency currency, source/licence
+completeness, current policy, readme validity or exact-package cleanliness. Keep
+separate check statuses and raw evidence. Repeated audits cannot reuse an overall
+pass simply because code, the model or the skill name is unchanged. Verify the
+actually loaded skill path/revision and disclose stale installed copies.
+
 ### Scanner success is not a security proof
 
 Static rules can miss an AJAX callback that verifies a nonce but lacks an
@@ -85,6 +93,14 @@ negative cases even when Plugin Check is clean.
 - A no-op method is not a vulnerable mutation solely because a scanner sees a
   callback-shaped name.
 
+### Parse runtime code before accepting syntax allegations
+
+An unsupported-looking word in PHPDoc, a comment, a string or vendor/tool output
+is not proof of a plugin parser failure. Inspect the exact ZIP's declaration;
+run its files with the declared minimum PHP and load the actual activation/admin
+path with WP_DEBUG. Preserve a false-positive claim and its reproduction rather
+than changing correct runtime behavior or accurate annotations to silence it.
+
 ### Sanitization is not validation
 
 - `wp_unslash()` only reverses request slashing.
@@ -104,6 +120,15 @@ negative cases even when Plugin Check is clean.
   database, email, filesystem, or browser flow.
 - Counts without the exact command, ruleset, exclusions, revision, and output
   are not reproducible evidence.
+
+### A broken harness is not a plugin defect
+
+Distinguish plugin failures from Core/tool dependencies, an incomplete admin
+bootstrap or invalid synthetic HTTP responses. Preserve the failed run, prove the
+harness problem and rerun the corrected scenario. Do not weaken an assertion
+merely to make it green. Missing/zero data is valid when the actual product
+contract permits it; explicit transport/authentication/schema failures remain
+separate errors.
 
 ### Fixes can be worse than findings
 

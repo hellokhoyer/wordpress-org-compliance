@@ -1,12 +1,16 @@
 # Exact-Package Release Gates
 
-Use this reference for a submission or re-review readiness decision.
+Use this reference for a submission or re-review readiness decision. For full
+readiness, initialize and validate the [evidence ledger](evidence-ledger.md).
+Each applicable gate needs artifact-bound evidence and an explicit status.
+Unknown/unexecuted technical checks cannot be reported as release-manager tasks.
 
 ## Gate 1: Identity and scope
 
 - Record repository remote, branch, commit, dirty status, plugin slug, main file,
   version, Stable Tag, text domain, intended prefix, and submission mode.
-- Record the previous released version and maintained companion versions.
+- Record the previous public release and maintained companions, or evidence that
+  none exist. First submission is not an upgrade from an internal Git snapshot.
 - Bind every QA/reviewer claim to a revision or package hash. Mark unknowns.
 - Compare candidate behavior and stored-data mutations with the released/default
   baseline, not merely the previous local commit.
@@ -45,7 +49,16 @@ Use this reference for a submission or re-review readiness decision.
 - Outbound services, data sent, circumstances, terms, and privacy links are
   documented; consent is obtained where required.
 - No external self-update or remotely loaded executable code remains.
-- Third-party code/assets have compatible licenses and maintained versions.
+- Inventory all distributed third-party code/assets, including copied/minified
+  bundles and fonts with no lockfile. Vendor exclusions in a first-party scanner
+  do not remove this obligation.
+- Verify licences, source/build integrity, currency/support and advisories as
+  separate evidence checks. Fetch current official stable metadata; retain the
+  retrieval time, source response and exact bundled file hashes. Never equate
+  authentic/compatible/advisory-free with current.
+- Resolve outdated/deprecated/unsupported copies or disclose an evidenced,
+  supported-version exception. A network/tool failure is UNVERIFIED. Do not
+  silently skip an ecosystem that the npm helper cannot check.
 - WordPress-bundled libraries are consumed through Core handles/APIs rather than
   duplicated.
 - Minified/generated files have public, maintained corresponding source and build
@@ -62,17 +75,24 @@ Minimum evidence generally includes:
 ```bash
 php -l path/to/changed.php
 phpcs --standard=WordPress path/to/changed.php
-wp plugin check plugin-slug --mode=update --format=csv
+wp plugin check plugin-slug --mode=new --format=csv
 ```
 
+Select `new` for first submission and the applicable `update` mode for an update.
 Adapt to installed tooling after checking `wp help plugin check` and
 `wp plugin list-checks`; do not assume options across versions. Run warnings, not
 only errors. An ignore/suppression is acceptable only for a proven false
 positive, narrow to the exact line/rule, and documented with the visible control
 path.
 
-Required behavioral tests must fail on the baseline for the intended reason and
-pass on the candidate. Include negative authorization, malformed data, repeated
+Run Plugin Review PHPCS against the extracted ZIP as well as the project's WPCS
+ruleset. Include a candidate scan with annotations disabled; retain both raw and
+source-dispositioned counts. An unresolved warning is not a clean scan, and a
+proven false positive is not automatically a code defect.
+
+Focused regressions for a confirmed fix must reproduce the baseline defect and
+pass on the candidate. Proactive acceptance tests need no failing predecessor.
+Include negative authorization, malformed data, repeated
 execution, and legitimate custom-role/owner cases where applicable.
 
 ## Gate 6: Live acceptance matrix
@@ -80,7 +100,8 @@ execution, and legitimate custom-role/owner cases where applicable.
 On a disposable/approved WordPress environment with `WP_DEBUG` enabled and logs
 cleared before the run, exercise relevant states:
 
-- clean install and activation;
+- clean install and activation on declared minimum PHP and supported modern PHP,
+  including actual admin initialization/class loading;
 - update from the previous released version with representative real data;
 - repeat request/activation/migration;
 - deactivation and reactivation;
@@ -125,11 +146,14 @@ Classify why every non-runtime file ships.
 - Main header and readme declare consistent plugin identity, license, minimums,
   version, and text domain. Follow current guidance on which headers belong in
   the main file versus readme.
-- Stable Tag, main plugin Version, changelog, Upgrade Notice, and SVN tag agree.
+- Stable Tag, main plugin Version and changelog agree. Check Upgrade Notice and
+  SVN tag when applicable; neither an earlier version nor an existing SVN repo
+  should be invented for a first submission.
 - Validate `readme.txt` with the official validator; PHP lint is irrelevant.
 - Verify all public source, service, Terms, and Privacy links are reachable.
-- SVN trunk and the new version tag contain the intended release; do not upload a
-  ZIP to SVN.
+- After approval, when SVN deployment is in scope and authorized, trunk and the
+  new tag must contain the approved release; do not upload a ZIP to SVN. Before
+  approval submit/update the ZIP through the existing submission page.
 - Release confirmation and reviewer reply are manager/committer actions unless
   explicitly delegated.
 
@@ -154,9 +178,19 @@ Before declaring readiness, verify:
 ## Readiness language
 
 Use `READY FOR SUBMISSION DECISION` only when Gates 1–9 are evidenced for the
-exact candidate package. This still does not guarantee acceptance because the
+exact candidate package, with justified non-applicability where appropriate.
+This still does not guarantee acceptance because the
 Plugins Team performs an independent full review and may identify additional
 issues.
 
-If code is ready but management owns version/build/SVN/reply work, say
-`CODE READY; RELEASE GATES PENDING` and list those tasks explicitly.
+Use `INCOMPLETE AUDIT; READINESS UNVERIFIED` when technical evidence is missing.
+A build, exact-package test, dependency lookup or required live acceptance check
+is technical work, not a manager-action exception. Report optional live-service
+recommendations separately from actual required checks; simulations prove only
+the modeled contract.
+
+Use `CODE READY; RELEASE GATES PENDING` only after all applicable technical checks
+close and only owner upload/approval/SVN/reply actions remain. Limited scope
+uses `LIMITED REVIEW; NO FULL READINESS DECISION`. The validator must support the
+conclusion; no test count, automated submission-scan Pass, or tool exit code can
+stand in for the complete evidence matrix.

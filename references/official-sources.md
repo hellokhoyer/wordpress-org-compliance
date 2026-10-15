@@ -61,6 +61,23 @@ articles only for context, never as the sole basis for a blocker.
 - Plugin assets:
   https://developer.wordpress.org/plugins/wordpress-org/plugin-assets/
 
+## Dependency currency and security
+
+- Use each component's official release/support pages and registry metadata, not
+  a search snippet, CDN filename or a pinned older source tag.
+- npm registry and stable distribution tags:
+  https://docs.npmjs.com/cli/v11/using-npm/registry/
+  https://docs.npmjs.com/adding-dist-tags-to-packages/
+- Composer advisory auditing (separate from currency):
+  https://getcomposer.org/doc/03-cli.md#audit
+- npm advisory auditing (separate from currency):
+  https://docs.npmjs.com/cli/v11/commands/npm-audit/
+
+Record current UTC retrieval time and retain the official response/page. A
+reviewer's explicit stable-version instruction applies to that review; do not
+invent a blanket policy that every non-latest supported library is automatically
+insecure or noncompliant. Supported exceptions need evidence and authorization.
+
 ## Tooling and source truth
 
 - Plugin Check project:

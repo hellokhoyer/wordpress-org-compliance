@@ -16,7 +16,9 @@ The skill focuses on the decisions that automated checks cannot make safely:
 - tracing Free, Pro, theme, and companion-plugin consumers when they exist;
 - reviewing nonce, capability, ownership, validation, and output boundaries;
 - testing previous/current provider-consumer combinations;
-- validating the exact distributable instead of only the source tree.
+- validating the exact distributable instead of only the source tree;
+- requiring separate dependency currency, provenance, licence and advisory evidence;
+- blocking overall readiness when a required technical check is unverified.
 
 It does not replace the WordPress.org Plugin Directory Guidelines, Plugin Check,
 PHPCS/WPCS, security review, or the Plugins Team's independent judgment. It does
@@ -62,6 +64,35 @@ Its output contains candidates. A match is not automatically a policy violation
 or security defect. Inspect reachability, authorization, stored-data semantics,
 and every relevant consumer before changing code.
 
+## Evidence and readiness helpers
+
+For a full audit start with the unresolved matrix before collecting evidence:
+
+```bash
+python3 scripts/verify_readiness.py init --mode=new --scope=full \
+  --package=/path/plugin.zip --output=/path/audit/audit.json
+```
+
+Inventory all distributed dependencies. The read-only npm helper checks declared
+vendored versions against live official metadata, binds their bytes to the ZIP,
+and saves raw upstream responses. Unsupported/manual checks remain unverified.
+
+```bash
+python3 scripts/check_dependencies.py --manifest=/path/audit/dependencies.json \
+  --package=/path/plugin.zip --output=/path/audit/currency.json
+python3 scripts/verify_readiness.py check /path/audit/audit.json \
+  --package=/path/plugin.zip --output=/path/audit/readiness.json
+```
+
+See [evidence-ledger.md](references/evidence-ledger.md) for the manifest, evidence
+fields, first-submission exceptions and decision rules. Python 3.9+ is required.
+The validator returns zero only for a complete `READY FOR SUBMISSION DECISION`
+record. It checks completeness, dates, hashes and decision consistency; it cannot
+prove an inventory/source judgment is correct or guarantee directory acceptance.
+Neither helper replaces advisory checks, source review or runtime tests.
+
+Run helper regressions with `python3 -m unittest discover -s tests -v`.
+
 ## Contents
 
 - `SKILL.md` contains the core workflow and approval boundaries.
@@ -71,6 +102,10 @@ and every relevant consumer before changing code.
 - `references/audit-report-template.md` provides a reusable audit format.
 - `references/official-sources.md` routes audits to current official guidance.
 - `scripts/audit_inventory.py` performs deterministic read-only inventory.
+- `references/evidence-ledger.md` defines the check/evidence/dependency records.
+- `scripts/check_dependencies.py` checks declared npm dependency currency.
+- `scripts/verify_readiness.py` initializes/validates overall audit readiness.
+- `tests/` verifies incomplete, stale, outdated and narrow-scope failure paths.
 
 ## Background
 

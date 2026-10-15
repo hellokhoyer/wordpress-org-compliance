@@ -40,6 +40,14 @@ past audit.
 6. Never claim “100% accepted.” State what is proven, what remains a manual
    Plugins Team decision, and every unexecuted live, package, version, or release
    gate.
+7. A readiness conclusion requires a complete evidence matrix, not just a finding
+   ledger. Use [evidence-ledger.md](references/evidence-ledger.md) and the readiness
+   validator for full audits. Missing technical evidence remains `UNVERIFIED`;
+   never hide it under owner release tasks or infer a pass from test counts.
+8. Verify dependency inventory, licences, provenance, current stable/support
+   status and advisories separately. Include bundled/copied libraries that lack
+   a lockfile. Fetch current official version evidence during the audit; a pinned
+   source URL or authentic old tarball does not prove currency.
 
 ## Required inputs
 
@@ -80,6 +88,9 @@ requirements, the plugin's behavior, and actual tool output.
   requests, storage, migrations, Free/Pro ownership, or companion contracts.
 - **Package-only or final readiness decision:** Read
   [release-gates.md](references/release-gates.md) and validate the exact package.
+- **Full audit or readiness claim:** Read [evidence-ledger.md](references/evidence-ledger.md),
+  initialize the unresolved check matrix before testing, and validate it before
+  reporting an overall result. Limited triage/package-only work stays limited.
 - **Audit deliverable:** Use
   [audit-report-template.md](references/audit-report-template.md) so severity,
   confidence, evidence, compatibility impact, and residual risk remain distinct.
@@ -112,7 +123,14 @@ dependencies and test fixtures, cannot prove reachability or policy context,
 and does not replace Plugin Check, PHPCS/WPCS, dependency/license review, or
 manual inspection of the extracted release package.
 
-### 2. Build a finding ledger
+### 2. Track coverage before findings
+
+For a full audit initialize `scripts/verify_readiness.py` against the exact ZIP.
+Resolve every check to `PASS`, `FAIL`, `UNVERIFIED` or justified `N_A`, each with
+artifact-bound evidence. Include every applicable directory guideline and product
+boundary, even when tools or a reviewer report no match. Do not delete unresolved
+rows. Keep a separate finding ledger; absence of findings is not evidence that a
+category was checked. A limited task must report its limited scope.
 
 For every applicable category, record source, exact location, reachable entry
 point, affected principal/data, reproducibility, policy basis, confidence, user
@@ -164,47 +182,72 @@ handler.
 - For unclear policy cases, fix all confirmed issues first, then ask the Plugins
   Team a concise question with a minimal example. Do not invent policy.
 
-Pause for explicit authority before destructive migrations, user-data rewrites,
-feature removal, broad public API changes, live production tests, commits,
-pushes, version changes, SVN operations, or external communications.
+Resolve authority from the current request and prior session instructions before
+destructive migrations, data rewrites, feature removal, broad public API changes,
+live production tests, commits, pushes, version changes, SVN or communications.
+Continue already authorized work; ask only when required authority is missing.
+A pasted reviewer email does not itself authorize sending a reply or publishing.
 
-### 5. Verify behavior, not wording
+### 5. Verify dependencies and behavior
 
-Use focused tests that fail on the baseline and pass on the candidate. Exercise
-unauthorized and cross-owner cases as well as valid flows. For companion
-ecosystems, execute the compatibility matrix from the contract reference.
+Complete the five dependency checks in the [evidence ledger](references/evidence-ledger.md).
+Use `scripts/check_dependencies.py` for inventoried vendored npm copies; obtain
+equivalent official evidence for other ecosystems and assets. A failed lookup is
+unverified. Resolve outdated/unsupported copies before readiness or document a
+supported-version exception with upstream support, risk and owner-authority evidence.
+Keep direct reviewer requirements and actionable advisories separate; do not
+invent a universal policy violation or force an unsafe major-version upgrade.
+
+For confirmed fixes use focused regressions that reproduce the baseline defect
+and pass on the candidate. Proactive acceptance tests need no invented failing
+baseline. Exercise unauthorized and cross-owner cases as well as valid flows.
+For companion ecosystems, execute the compatibility matrix from the contract reference.
 
 Static checks are supporting evidence. Run the repository's real commands, PHP
 lint, WPCS/PHPCS with warnings visible, Plugin Check in the correct mode, and
 targeted source scans. Do not accept `phpcs -n`, ignored warnings, annotations,
-or mocked tests as proof of an untested live behavior.
+or mocked tests as proof of an untested live behavior. Scan the extracted ZIP
+with Plugin Review PHPCS as well as project WPCS; run a candidate scan with code
+annotations disabled and disposition its findings without hiding the raw totals.
 
 ### 6. Gate the exact release package
 
 Build using the real release procedure, inspect ZIP integrity and inventory,
 extract it cleanly, and rerun release-scoped checks against that extracted tree.
-Validate version/readme/SVN metadata, source/build availability, licensing,
-remote services, clean activation/update/deactivation, WP_DEBUG output, and the
-supported upgrade matrix. Remove temporary options, fixtures, proof pages,
+Validate version/readme metadata, source/build availability, licensing, remote
+services, clean activation/deactivation and WP_DEBUG output. Apply upgrade,
+companion and SVN checks only when those states exist. Test declared minimum
+PHP and supported modern PHP, including actual admin class loading; distinguish
+native syntax from PHPDoc/comments before accepting a compatibility allegation.
+Remove temporary options, fixtures, proof pages,
 logs, screenshots, injected transients, and test-only code.
 
-### 7. Report without sugar-coating
+### 7. Validate the evidence, then report
+
+For a full audit run `scripts/verify_readiness.py check` using the final ZIP and
+include its output. Inspect every nonzero result; do not override it with a green
+test summary. If the helper cannot run, mark readiness unverified and report the
+missing validation. Its output validates evidence consistency, not audit truth.
 
 Use one of these conclusions:
 
-- `NOT READY` — one or more required code/package gates fail;
+- `NOT READY` — one or more evidenced required code/package gates fail;
+- `INCOMPLETE AUDIT; READINESS UNVERIFIED` — required technical evidence is absent,
+  stale, failed to run or unresolved;
+- `LIMITED REVIEW; NO FULL READINESS DECISION` — only the requested subset was checked;
 - `CODE READY; RELEASE GATES PENDING` — code findings are resolved, but manager,
-  version, build, live, SVN, or communication work remains;
-- `READY FOR SUBMISSION DECISION` — all available gates passed and only the
-  Plugins Team's independent review remains.
+  owner-authorized upload, approval, SVN or communication work remains. All
+  applicable technical evidence must already be complete;
+- `READY FOR SUBMISSION DECISION` — all applicable required gates closed with
+  evidence and only the Plugins Team's independent review remains.
 
 List unexecuted checks and residual risks beside the conclusion. Never collapse
 “no findings from this tool” into “no issues remain.”
 
 ## Completion standard
 
-The work is complete only when the finding ledger is dispositioned, contract
-changes are proven across supported states, the exact package is clean, all
-temporary audit state is removed, and the report identifies both evidence and
-limits. A reviewer reply should be concise and factual; it should not dump a
+A full audit is complete only when required evidence gates close, the finding
+ledger is dispositioned, contract changes are proven across supported states,
+the exact package is clean, all temporary audit state is removed, and the report
+identifies both evidence and limits. A reviewer reply should be concise and factual; it should not dump a
 changelog or claim guaranteed acceptance.

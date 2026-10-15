@@ -4,8 +4,9 @@ Use this structure. Omit empty sections; do not invent evidence.
 
 ## Executive decision
 
-- **Decision:** `NOT READY` / `CODE READY; RELEASE GATES PENDING` /
-  `READY FOR SUBMISSION DECISION`
+- **Decision:** `NOT READY` / `INCOMPLETE AUDIT; READINESS UNVERIFIED` /
+  `CODE READY; RELEASE GATES PENDING` / `READY FOR SUBMISSION DECISION` /
+  `LIMITED REVIEW; NO FULL READINESS DECISION`
 - **Audit mode:** proactive / new / update / closed-plugin re-review /
   package-only
 - **Candidate:** repository, branch, commit
@@ -23,6 +24,22 @@ Use this structure. Omit empty sections; do not invent evidence.
 - Supported WordPress/PHP/site modes
 - Reviewer/QA artifact identity, or `none`
 - Authorized changes and explicitly excluded actions
+
+## Required-check coverage
+
+For full audits include audit.json and the final verify_readiness.py result.
+Do not omit unresolved checks or substitute a test count for this matrix.
+
+| Check ID | PASS / FAIL / UNVERIFIED / N_A | Package SHA-256 | Evidence file/hash + command/review scope | Reason / remaining work |
+| --- | --- | --- | --- | --- |
+
+## Distributed dependency ledger
+
+Include dependencies without lockfiles and duplicate bundled versions. Keep
+licensing, integrity, currency/support and advisories as separate results.
+
+| Component / bundled files | Bundled version | Latest stable / supported branch | Official source + UTC retrieval + saved evidence | Licence / integrity | Advisory result | Disposition / authorized exception |
+| --- | --- | --- | --- | --- | --- | --- |
 
 ## Reviewer and audit ledger
 
@@ -72,8 +89,8 @@ when those layers were mocked.
 | Risk/gate | Impact | Owner | Required action | Blocks submission? |
 | --- | --- | --- | --- | --- |
 
-Separate code blockers from manager-owned versioning, build, SVN, release
-confirmation, source-link, and reviewer-reply tasks.
+Keep unverified technical gates separate from owner upload/approval/SVN/reply
+actions. A missing build, source-link check or runtime test prevents code readiness.
 
 ## Proposed reviewer reply (reviewer-driven work only)
 
@@ -81,8 +98,12 @@ Keep it concise:
 
 > Thank you for the review. We addressed the reported categories and completed a
 > pattern-wide review of the updated release package. The corrected version has
-> been uploaded to the plugin SVN repository. [Add only a necessary clarification
+> been uploaded through the applicable review/release channel. [Add only a necessary clarification
 > with one concrete example.] Please let us know if you need anything further.
 
-Do not list every internal change unless the reviewer asks. Do not claim
-guaranteed compliance or acceptance.
+Write an uploaded/sent statement only after the action actually succeeded. If
+preparing a draft, label it for use after upload. Before approval the channel is
+the existing submission's updated-ZIP control, not SVN. Reply to the actual review
+thread, not the submission-confirmation thread. Do not send without authority.
+Do not list every internal change unless the reviewer asks; include only necessary
+clarifications. Do not claim guaranteed compliance or acceptance.

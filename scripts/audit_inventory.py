@@ -116,7 +116,7 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def run_git(root: Path, *args: str) -> str:
+def run_git(root: Path, *args: str) -> Optional[str]:
     try:
         result = subprocess.run(
             ["git", "-C", str(root), *args],
@@ -126,8 +126,8 @@ def run_git(root: Path, *args: str) -> str:
             timeout=10,
         )
     except (OSError, subprocess.TimeoutExpired):
-        return ""
-    return result.stdout.strip() if 0 == result.returncode else ""
+        return None
+    return result.stdout.strip() if 0 == result.returncode else None
 
 
 def iter_files(root: Path) -> Iterable[Path]:
@@ -555,7 +555,7 @@ def main() -> int:
     print_value("Readme Tested up to", parse_readme_header(readme_source, "Tested up to"))
     print_value("Git branch", branch)
     print_value("Git commit", commit)
-    print_value("Dirty paths", len(status.splitlines()) if status else 0)
+    print_value("Dirty paths", len(status.splitlines()) if status is not None else None)
     print_value("Files", counters.get("all_files", 0))
     print_value("First-party PHP files", counters.get("first_party_php", 0))
     print_value("First-party JavaScript files", counters.get("first_party_js", 0))
